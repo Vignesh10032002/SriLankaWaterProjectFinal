@@ -1,0 +1,46 @@
+---
+title: "Sri Lankan Water Project"
+subtitle: "Survival Data Analysis"
+author: "Vignesh Pirapaharan"
+date: "May 28, 2022"
+editor_options: 
+  chunk_output_type: console
+output:
+  pdf_document: default
+---
+
+```{r load-packages}
+library(tidyverse)
+library(broom)
+```
+
+```{r data_cleaning, eval = FALSE}
+Survival_Data_Combined <- subset(Survival_Data_Combined,`48_surv`!= 0)
+```
+
+```{r mutating-variable, eval = FALSE}
+Survival_Data_Combined %>%
+  mutate(Survival_Data_Combined, percentagesurvival = `96_surv` / Initial_total) %>%
+  ggplot(aes(x = Glyphosate, y = percentagesurvival)) +
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE) +
+  labs (x = "Glyphosate concentration", y = "Percentage Survival") 
+```
+
+```{r getting_numerical_outputs_model, eval = FALSE}
+Survival_Data_Combined_New  <- Survival_Data_Combined %>%
+  mutate(percentagesurvival = `96_surv` / Initial_total)
+Survival_data_survival <- lm(percentagesurvival ~ Glyphosate, data = Survival_Data_Combined_New)
+tidy(Survival_data_survival)
+```
+
+$$ {\widehat{Replicate1Survival}} = 0.978 - 0.00357~Glyphosate$$
+
+```{r bar-plots_with_data, eval = FALSE}
+Survival_Data_Combined_New %>%
+  group_by(`Sample Type`) %>%
+  summarize(mean_percentage_survival = mean(percentagesurvival), se = sd(percentagesurvival)/sqrt(79)) %>% 
+  ggplot(aes(x = `Sample Type`, y = mean_percentage_survival)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = mean_percentage_survival + se, ymax = mean_percentage_survival - se))
+```
