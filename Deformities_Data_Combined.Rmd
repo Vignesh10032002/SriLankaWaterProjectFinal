@@ -1,0 +1,65 @@
+---
+title: "Sri Lankan Water Project"
+subtitle: "Deformities_Data_Combined"
+author: "Vignesh Pirapaharan"
+date: "May 28, 2022"
+editor_options: 
+  chunk_output_type: console
+output:
+  pdf_document: default
+---
+
+```{r load-packages}
+library(tidyverse)
+library(broom)
+```
+
+```{r data_cleaning_deformities, eval = FALSE}
+Deformities_Combined <- subset(Deformities_Combined, `Total Number` != 0)
+```
+
+```{r deformed-variable, eval = FALSE}
+Deformities_Combined %>%
+  mutate(Deformities_Combined,
+         deformed = `Total Number` - `Number Normal`, 
+         percentage_deformed = deformed / `Total Number`) %>%
+  ggplot(aes(x = Glyphosate, y = percentage_deformed)) +
+  geom_point() +
+  geom_smooth(method=lm, se=TRUE) +
+  labs (x = "Glyphosate concentration", y = "Percentage Deformed") 
+```
+
+```{r getting_numerical_outputs_model_deformities, eval = FALSE}
+Deformities_Combined_New  <- Deformities_Combined %>%
+  mutate(Deformities_Combined,
+         deformed = `Total Number` - `Number Normal`, 
+         percentage_deformed = deformed / `Total Number`) 
+model_deformities <- lm(percentage_deformed ~ Glyphosate, data = Deformities_Combined_New)
+tidy(model_deformities)
+```
+
+$$ {\widehat{Replicate1Deformities}} = 0.103 + 0.00927~Glyphosate$$
+
+```{r bar-plots_with_data_deformities, eval = FALSE}
+Deformities_Combined_New %>%
+  group_by(`Sample Type`) %>%
+  summarize(mean_percentage_deformed = mean(percentage_deformed), se = sd(percentage_deformed)/ sqrt(79)) %>% 
+  ggplot(aes(x = `Sample Type`, y = mean_percentage_deformed)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=mean_percentage_deformed - se, ymax=mean_percentage_deformed + se))
+```
+
+```{r violin-plots_with_data_deformities, eval=FALSE}
+Deformities_Combined_New %>%
+  group_by(`Sample Type`) %>%
+  summarize(mean_percentage_deformed = mean(percentage_deformed), se = sd(percentage_deformed)/ sqrt(79)) %>% 
+  ggplot(aes(x = `Sample Type`, y = mean_percentage_deformed)) +
+  geom_violin()       
+#doesn't work as data points insufficient (https://stackoverflow.com/questions/60549030/geom-violin-using-the-weight-aesthetic-unexpectedly-drop-levels)
+```
+
+```{r try_something_new, eval = FALSE}
+ggplot(data = Deformities_Combined_New, mapping = aes(x = Glyphosate, y = percentage_deformed)) +
+ geom_point() +
+ facet_wrap(~ `Sample ID`)
+```
